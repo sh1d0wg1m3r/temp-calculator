@@ -1,0 +1,351 @@
+<!DOCTYPE html><html lang="bg"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конвертор на бройни системи</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --hover-color: #45a049;
+            --bg-color: #f0f0f0;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --text-color: #333;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .conversion-controls {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .select-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+        }
+
+        select, input, button {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 120px;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .result-section {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        #steps {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #f8f9fa;
+        }
+
+        #stepsList {
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 0.5rem;
+            font-size: 14px;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a1a;
+                --card-bg: #2d2d2d;
+                --text-color: #ffffff;
+                --border-color: #404040;
+            }
+
+            #steps, .result-section {
+                background-color: #333;
+            }
+        }
+
+        /* Responsive design */
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 100%;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            select, input, button {
+                padding: 15px;
+                font-size: 16px;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section, #steps {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Конвертор на бройни системи</h1>
+            <p>Превръщайте числа между различни бройни системи</p>
+        </div>
+
+        <div class="conversion-controls">
+            <div class="select-group">
+                <select id="fromBase" aria-label="От бройна система">
+                    <option value="2">Двоична (2)</option>
+                    <option value="4">Четворична (4)</option>
+                    <option value="6">Шестична (6)</option>
+                    <option value="8">Осмична (8)</option>
+                    <option value="10">Десетична (10)</option>
+                    <option value="16">Шестнадесетична (16)</option>
+                    <option value="18">Осемнадесетична (18)</option>
+                    <option value="64">64-ична</option>
+                </select>
+
+                <select id="toBase" aria-label="Към бройна система">
+                    <option value="2">Двоична (2)</option>
+                    <option value="4">Четворична (4)</option>
+                    <option value="6">Шестична (6)</option>
+                    <option value="8">Осмична (8)</option>
+                    <option value="10">Десетична (10)</option>
+                    <option value="16">Шестнадесетична (16)</option>
+                    <option value="18">Осемнадесетична (18)</option>
+                    <option value="64">64-ична</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="input" placeholder="Въведете число" aria-label="Входно число">
+                <button onclick="convert()" aria-label="Конвертирай">Конвертирай</button>
+            </div>
+        </div>
+
+        <div class="result-section">
+            <h3>Резултат:</h3>
+            <p id="result"></p>
+        </div>
+
+        <div id="steps">
+            <h3>Стъпки за решение:</h3>
+            <div id="stepsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const digits64 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+
+        function validateInput(input, base) {
+            const validChars = base === 64 ? digits64 : digits.slice(0, base);
+            return input.split('').every(char => validChars.includes(char.toUpperCase()));
+        }
+
+        function getDigitValue(digit, base) {
+            if (base === 64) {
+                return digits64.indexOf(digit);
+            }
+            return digits.indexOf(digit.toUpperCase());
+        }
+
+        function getDigitChar(value, base) {
+            if (base === 64) {
+                return digits64[value];
+            }
+            return digits[value];
+        }
+
+        function toDecimal(number, fromBase) {
+            let steps = [];
+            let decimal = 0;
+            const digits = number.toString().split('').reverse();
+            
+            steps.push(`1. Превръщане от ${fromBase}-ична в десетична:`);
+            steps.push(`Число: ${number}`);
+            steps.push(`Формула: Σ(цифра × ${fromBase}^позиция)`);
+            
+            let calculation = "";
+            let detailedSteps = [];
+            
+            for (let i = 0; i < digits.length; i++) {
+                const digitValue = getDigitValue(digits[i], fromBase);
+                const power = Math.pow(fromBase, i);
+                const term = digitValue * power;
+                decimal += term;
+                
+                detailedSteps.push(`${digitValue} × ${fromBase}^${i} = ${term}`);
+            }
+            
+            steps.push("Изчисления:");
+            steps = steps.concat(detailedSteps);
+            steps.push(`Сума: ${decimal}`);
+            
+            return {
+                result: decimal,
+                steps: steps
+            };
+        }
+
+        function fromDecimal(decimal, toBase) {
+            let steps = [];
+            let result = "";
+            let temp = decimal;
+            
+            steps.push(`2. Превръщане от десетична в ${toBase}-ична:`);
+            steps.push(`Делим последователно на ${toBase} и записваме остатъците в обратен ред`);
+            
+            let divisions = [];
+            while (temp > 0) {
+                const remainder = temp % toBase;
+                const quotient = Math.floor(temp / toBase);
+                result = getDigitChar(remainder, toBase) + result;
+                divisions.push(`${temp} ÷ ${toBase} = ${quotient} (остатък ${remainder})`);
+                temp = quotient;
+            }
+            
+            steps = steps.concat(divisions);
+            steps.push(`Резултат (четен отдясно наляво): ${result}`);
+            
+            return {
+                result: result || "0",
+                steps: steps
+            };
+        }
+
+        function displayError(message) {
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `<span class="error">${message}</span>`;
+            document.getElementById('stepsList').innerHTML = '';
+        }
+
+        function convert() {
+            const fromBase = parseInt(document.getElementById('fromBase').value);
+            const toBase = parseInt(document.getElementById('toBase').value);
+            const input = document.getElementById('input').value.trim();
+            
+            if (!input) {
+                displayError('Моля въведете число!');
+                return;
+            }
+
+            if (!validateInput(input, fromBase)) {
+                displayError(`Невалидно число за ${fromBase}-ична бройна система!`);
+                return;
+            }
+
+            let steps = [];
+            let result;
+
+            try {
+                if (fromBase === toBase) {
+                    result = input;
+                    steps.push("Числото вече е в исканата бройна система.");
+                } else {
+                    const toDecimalResult = toDecimal(input, fromBase);
+                    steps = steps.concat(toDecimalResult.steps);
+
+                    if (toBase !== 10) {
+                        const fromDecimalResult = fromDecimal(toDecimalResult.result, toBase);
+                        steps = steps.concat(fromDecimalResult.steps);
+                        result = fromDecimalResult.result;
+                    } else {
+                        result = toDecimalResult.result;
+                    }
+                }
+
+                document.getElementById('result').textContent = result;
+                document.getElementById('stepsList').innerHTML = steps.join('<br>');
+            } catch (error) {
+                displayError('Възникна грешка при конвертирането!');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                convert();
+            }
+        });
+    </script>
+
+
+</body></html>
